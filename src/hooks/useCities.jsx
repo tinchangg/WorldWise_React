@@ -6,7 +6,7 @@ function useCities() {
   const value = useContext(CitiesContext);
 
   if (value === undefined)
-    throw new Error("CitiesContext was used outside the CitiesProvider");
+    throw new Error("CitiesContext was used outside CitiesProvider");
   return value;
 }
 
