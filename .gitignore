@@ -22,12 +22,13 @@ pids
 .env.local
 
 # Dependency directories
-node_modules/
+client/node_modules/
+server/node_modules/
 jspm_packages/
 
-
 # JSON Server database file
-cities.json
+data/*.json
+server/data/*.json
 
 # TypeScript cache
 *.tsbuildinfo
@@ -53,10 +54,11 @@ cities.json
 
 # Vite
 .vite/
+client/.vite/
 
 # Build output
-dist/
-build/
+client/dist/
+server/build/
 
 # IDE files
 .idea/
@@ -79,3 +81,10 @@ build/
 
 # Editor config
 .editorconfig
+
+# PostgreSQL / DB temp files
+*.sql
+*.dump
+*.backup
+pgdata/
+*.db
