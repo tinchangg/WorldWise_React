@@ -48,7 +48,7 @@ function Map() {
   // RENDER CITIES MARKERS
   const renderedCitiesMarkers = cities.map((city) => {
     return (
-      <Marker position={[city.position.lat, city.position.lng]} key={city.id}>
+      <Marker position={[city.position.x, city.position.y]} key={city.id}>
         <Popup>
           <span>{city.emoji}</span>
           <span>{city.cityName}</span>

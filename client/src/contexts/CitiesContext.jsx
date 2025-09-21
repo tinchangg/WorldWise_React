@@ -1,4 +1,5 @@
 import { createContext, useEffect, useReducer } from "react";
+import axios from "axios";
 
 // BASE URL
 const BASE_URL = "http://localhost:8000";
@@ -69,9 +70,11 @@ function CitiesProvider({ children }) {
     const fetchCities = async () => {
       dispatch({ type: "loading" });
       try {
-        await pause(500);
-        const res = await fetch(`${BASE_URL}/cities`);
-        const data = await res.json();
+        // await pause(500);
+        // const res = await fetch(`${BASE_URL}/cities`);
+        const res = await axios.get("http://localhost:5000/api/cities");
+        const data = res.data;
+        console.log(data);
         dispatch({ type: "cities/loaded", payload: data });
       } catch {
         console.error("Failed to fetch cities...");
