@@ -16,7 +16,7 @@ function CityList() {
   }
 
   const renderedCities = cities.map((city) => {
-    return <CityItem key={city.id} city={city} />;
+    return <CityItem key={city.id} cityItem={city} />;
   });
 
   return <ul className={styles.cityList}>{renderedCities}</ul>;

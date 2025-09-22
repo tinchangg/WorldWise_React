@@ -70,11 +70,8 @@ function CitiesProvider({ children }) {
     const fetchCities = async () => {
       dispatch({ type: "loading" });
       try {
-        // await pause(500);
-        // const res = await fetch(`${BASE_URL}/cities`);
         const res = await axios.get("http://localhost:5000/api/cities");
         const data = res.data;
-        console.log(data);
         dispatch({ type: "cities/loaded", payload: data });
       } catch {
         console.error("Failed to fetch cities...");
@@ -87,14 +84,12 @@ function CitiesProvider({ children }) {
   // FUNCTION -> FETCH CURRENT CITY
   const getCity = async (id) => {
     // check -> id comes from URL -> strings
-    console.log(id, currentCity.id);
-    if (id === currentCity.id) return;
+    if (parseInt(id) === currentCity.id) return;
 
     dispatch({ type: "loading" });
     try {
-      await pause(500);
-      const res = await fetch(`${BASE_URL}/cities/${id}`);
-      const data = await res.json();
+      const res = await axios.get(`http://localhost:5000/api/cities/${id}`);
+      const data = res.data;
       dispatch({ type: "city/loaded", payload: data });
     } catch {
       console.error("Failed to fetch current city...");
@@ -109,15 +104,8 @@ function CitiesProvider({ children }) {
   const addCity = async (newCity) => {
     dispatch({ type: "loading" });
     try {
-      await pause(500);
-      const res = await fetch(`${BASE_URL}/cities`, {
-        method: "POST",
-        body: JSON.stringify(newCity),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await res.json();
+      const res = await axios.post("http://localhost:5000/api/cities", newCity);
+      const data = res.data;
       dispatch({ type: "city/added", payload: data });
     } catch {
       console.error("Failed to add new city...");
@@ -129,10 +117,12 @@ function CitiesProvider({ children }) {
   const deleteCity = async (id) => {
     dispatch({ type: "loading" });
     try {
-      await pause(500);
-      await fetch(`${BASE_URL}/cities/${id}`, {
-        method: "DELETE",
-      });
+      // await pause(500);
+      // await fetch(`${BASE_URL}/cities/${id}`, {
+      //   method: "DELETE",
+      // });
+      const res = await axios.delete(`http://localhost:5000/api/cities/${id}`);
+      console.log(res.data);
       dispatch({ type: "city/deleted", payload: id });
     } catch {
       console.error("Failed to delete city...");

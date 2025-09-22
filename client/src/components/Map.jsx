@@ -51,7 +51,7 @@ function Map() {
       <Marker position={[city.position.x, city.position.y]} key={city.id}>
         <Popup>
           <span>{city.emoji}</span>
-          <span>{city.cityName}</span>
+          <span>{city.city}</span>
         </Popup>
       </Marker>
     );

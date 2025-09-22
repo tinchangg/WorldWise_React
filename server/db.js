@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+// DEV ONLY
 console.log("DB Config:", {
   user: process.env.DB_USER,
   host: process.env.DB_HOST,

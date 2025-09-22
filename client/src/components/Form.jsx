@@ -80,14 +80,14 @@ function Form() {
     if (!cityName || !date) return;
 
     const newCity = {
-      cityName,
+      city: cityName,
       country,
       emoji,
       date,
       notes,
       position: {
-        lat: currentLat,
-        lng: currentLng,
+        x: currentLat,
+        y: currentLng,
       },
     };
 

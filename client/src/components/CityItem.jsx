@@ -9,12 +9,12 @@ const formatDate = (date) =>
     year: "numeric",
   }).format(new Date(date));
 
-function CityItem({ city }) {
+function CityItem({ cityItem }) {
   // HOOKS
   const { currentCity, deleteCity } = useCities();
 
   // PROPS
-  const { id, position, emoji, cityName, date } = city;
+  const { id, position, emoji, city, date } = cityItem;
 
   // HANDLES
   const handleClick = (event) => {
@@ -33,10 +33,10 @@ function CityItem({ city }) {
     <li>
       <Link
         className={cityItemStyle}
-        to={`${id}?lat=${position.lat}&lng=${position.lng}`}
+        to={`${id}?lat=${position.x}&lng=${position.y}`}
       >
         <span className={styles.emoji}>{emoji}</span>
-        <h3 className={styles.name}>{cityName}</h3>
+        <h3 className={styles.name}>{city}</h3>
         <time className={styles.date}>{formatDate(date)}</time>
         <button className={styles.deleteBtn} onClick={handleClick}>
           &times;
