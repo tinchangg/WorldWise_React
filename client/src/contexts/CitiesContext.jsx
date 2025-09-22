@@ -2,7 +2,7 @@ import { createContext, useEffect, useReducer } from "react";
 import axios from "axios";
 
 // BASE URL
-const BASE_URL = "http://localhost:8000";
+// const BASE_URL = "http://localhost:8000";
 
 // DEV ONLY -> PAUSE function
 const pause = (duration) => {
@@ -70,7 +70,7 @@ function CitiesProvider({ children }) {
     const fetchCities = async () => {
       dispatch({ type: "loading" });
       try {
-        const res = await axios.get("http://localhost:5000/api/cities");
+        const res = await axios.get("/api/cities");
         const data = res.data;
         dispatch({ type: "cities/loaded", payload: data });
       } catch {
@@ -88,7 +88,7 @@ function CitiesProvider({ children }) {
 
     dispatch({ type: "loading" });
     try {
-      const res = await axios.get(`http://localhost:5000/api/cities/${id}`);
+      const res = await axios.get(`/api/cities/${id}`);
       const data = res.data;
       dispatch({ type: "city/loaded", payload: data });
     } catch {
@@ -104,7 +104,7 @@ function CitiesProvider({ children }) {
   const addCity = async (newCity) => {
     dispatch({ type: "loading" });
     try {
-      const res = await axios.post("http://localhost:5000/api/cities", newCity);
+      const res = await axios.post("/api/cities", newCity);
       const data = res.data;
       dispatch({ type: "city/added", payload: data });
     } catch {
@@ -121,7 +121,7 @@ function CitiesProvider({ children }) {
       // await fetch(`${BASE_URL}/cities/${id}`, {
       //   method: "DELETE",
       // });
-      const res = await axios.delete(`http://localhost:5000/api/cities/${id}`);
+      const res = await axios.delete(`/api/cities/${id}`);
       console.log(res.data);
       dispatch({ type: "city/deleted", payload: id });
     } catch {
