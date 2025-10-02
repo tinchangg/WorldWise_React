@@ -9,7 +9,7 @@ The project started as a React frontend app, guided by _Jonas Schmedtmann’s_ [
 ### Frontend (React + Leaflet)
 
 - Landing page with app entry
-- State management with **useReducer** for predictable updates
+- State management with **Context API** and **useReducer** for predictable updates
 - Interactive map powered by **Leaflet** displaying visited cities
 - Add and view city details:
   - city, country, country flag emoji
