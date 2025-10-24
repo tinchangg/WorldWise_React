@@ -2,6 +2,7 @@
 import express from "express";
 import cors from "cors";
 import citiesRoutes from "./routes/citiesRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
 // dotenv.config();
 const app = express();
@@ -16,6 +17,7 @@ app.get("/", (req, res) => {
 
 // API Routes
 app.use("/api", citiesRoutes);
+app.use("/api/auth", authRoutes);
 
 // Start Server
 const PORT = process.env.PORT || 5000;
