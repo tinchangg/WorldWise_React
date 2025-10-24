@@ -12,7 +12,6 @@ router.post("/register", async (req, res) => {
   const { email, password } = req.body;
   // hash password
   const hashedPassword = await bcrypt.hash(password, saltRounds);
-  console.log(hashedPassword);
 
   try {
     // Check existing user
@@ -29,7 +28,11 @@ router.post("/register", async (req, res) => {
     const result = await db.query(queryText, values);
     res.json(result.rows[0]);
   } catch (err) {
-    console.error(err);
+    if (err.message.includes("bcrypt")) {
+      console.error("Bcrypt Error:", err);
+    } else {
+      console.error(err);
+    }
     res.status(500).json({ error: "Server error" });
   }
 });
@@ -48,14 +51,17 @@ router.post("/login", async (req, res) => {
     if (!user) return res.json({ error: "Wrong email or password" });
 
     // Check if password correct
-    console.log(password, user.password_hash);
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) return res.json({ error: "Wrong email or password" });
 
     // Password match
     res.json(user);
   } catch (err) {
-    console.error(err);
+    if (err.message.includes("bcrypt")) {
+      console.error("Bcrypt Error:", err);
+    } else {
+      console.error(err);
+    }
     res.status(500).json({ error: "Server error" });
   }
 });
