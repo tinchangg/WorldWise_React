@@ -1,15 +1,17 @@
-// import dotenv from "dotenv";
+import "dotenv/config.js"; // Automatically calls dotenv.config()
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import citiesRoutes from "./routes/citiesRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 
-// dotenv.config();
+// env.config();
 const app = express();
 
 // Middleware
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
+app.use(cookieParser());
 
 app.get("/", (req, res) => {
   res.send("Backend is running...");

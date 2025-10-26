@@ -23,7 +23,7 @@ import Form from "./components/Form";
 import SpinnerFullPage from "./components/SpinnerFullPage";
 
 import { CitiesProvider } from "./contexts/CitiesContext";
-import { AuthProvider } from "./contexts/FakeAuthContext";
+import { AuthProvider } from "./contexts/AuthContext";
 
 function App() {
   return (
