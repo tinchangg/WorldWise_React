@@ -79,7 +79,8 @@ function AuthProvider({ children }) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await axios.get("/api/auth/logout");
     dispatch({ type: "logout" });
   };
 

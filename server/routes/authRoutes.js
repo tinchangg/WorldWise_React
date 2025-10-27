@@ -115,4 +115,10 @@ router.get("/check", authenticate, async (req, res) => {
   }
 });
 
+// Logout
+router.get("/logout", (req, res) => {
+  res.clearCookie("jwt");
+  res.json({ message: "Logged out" });
+});
+
 export default router;
