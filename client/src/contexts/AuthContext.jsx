@@ -1,7 +1,9 @@
 import { createContext, useContext, useReducer } from "react";
 import axios from "axios";
+import { useEffect } from "react";
 
-axios.defaults.withCredentials = true; // include cookies automatically
+// Include cookies automatically
+axios.defaults.withCredentials = true;
 
 // CREATE CONTEXT
 const AuthContext = createContext();
@@ -10,15 +12,35 @@ const AuthContext = createContext();
 const initialState = {
   user: null,
   isAuthenticated: false,
+  loadingAuth: true,
 };
 
 // REDUCER
 const reducer = (state, action) => {
   switch (action.type) {
     case "login":
-      return { ...state, user: action.payload, isAuthenticated: true };
+      return {
+        ...state,
+        user: action.payload,
+        isAuthenticated: true,
+        loadingAuth: false,
+      };
     case "logout":
-      return { ...state, user: null, isAuthenticated: false };
+      return {
+        ...state,
+        user: null,
+        isAuthenticated: false,
+        loadingAuth: false,
+      };
+    case "setUser":
+      return {
+        ...state,
+        user: action.payload,
+        isAuthenticated: true,
+        loadingAuth: false,
+      };
+    case "checkedAuth":
+      return { ...state, loadingAuth: false };
     default:
       throw new Error("Unknow action type: " + action.type);
   }
@@ -27,10 +49,24 @@ const reducer = (state, action) => {
 // PROVIDER
 function AuthProvider({ children }) {
   // States
-  const [{ user, isAuthenticated }, dispatch] = useReducer(
+  const [{ user, isAuthenticated, loadingAuth }, dispatch] = useReducer(
     reducer,
     initialState
   );
+
+  // Effects
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await axios.get("/api/auth/check");
+        dispatch({ type: "setUser", payload: res.data.user });
+      } catch (err) {
+        console.error(err);
+        dispatch({ type: "checkedAuth" });
+      }
+    };
+    checkAuth();
+  }, []);
 
   // Fns
   const login = async (credentials) => {
@@ -47,7 +83,7 @@ function AuthProvider({ children }) {
     dispatch({ type: "logout" });
   };
 
-  const value = { user, isAuthenticated, login, logout };
+  const value = { user, isAuthenticated, loadingAuth, login, logout };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

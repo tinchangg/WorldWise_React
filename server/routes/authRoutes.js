@@ -2,6 +2,7 @@ import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import db from "../db.js";
+import authenticate from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -65,7 +66,7 @@ router.post("/login", async (req, res) => {
     if (!match) return res.json({ error: "Wrong email or password" });
 
     // Password correct -> create JWT
-    const userPayload = { id: user.id, email: user.email };
+    const userPayload = { id: user.id };
     const token = createToken(userPayload);
 
     // Send token in HTTP-only cookie
@@ -94,13 +95,17 @@ router.post("/login", async (req, res) => {
 });
 
 // Check login
-router.get("/me", (req, res) => {
-  const token = req.cookies.token;
-  if (!token) return res.status(401).json({ message: "Not authenticated" });
-
+router.get("/check", authenticate, async (req, res) => {
   try {
-    const user = jwt.verify(token, process.env.JWT_SECRET);
-    res.json(user);
+    const result = await db.query(
+      "SELECT id, email, avatar, name FROM users WHERE id = $1;",
+      [req.userId]
+    );
+    const user = result.rows[0];
+
+    if (!user) return res.status(401).json({ error: "User not found" });
+
+    res.json({ user });
   } catch {
     res.status(403).json({ message: "Invalid token" });
   }
