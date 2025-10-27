@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import db from "../db.js";
 import authenticate from "../middleware/authMiddleware.js";
+import { updateLastLogin } from "../services/userService.js";
 
 const router = express.Router();
 
@@ -65,7 +66,10 @@ router.post("/login", async (req, res) => {
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) return res.json({ error: "Wrong email or password" });
 
-    // Password correct -> create JWT
+    // Password correct -> update last login
+    await updateLastLogin(user.id);
+
+    // Create JWT
     const userPayload = { id: user.id };
     const token = createToken(userPayload);
 

@@ -12,7 +12,7 @@ const AuthContext = createContext();
 const initialState = {
   user: null,
   isAuthenticated: false,
-  loadingAuth: true,
+  loadingAuth: true, // perform initial auth check -> default true
 };
 
 // REDUCER
@@ -54,7 +54,7 @@ function AuthProvider({ children }) {
     initialState
   );
 
-  // Effects
+  // Effects -> Initial Auth Check
   useEffect(() => {
     const checkAuth = async () => {
       try {
