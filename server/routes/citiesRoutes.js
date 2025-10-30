@@ -1,13 +1,14 @@
 import express from "express";
 import db from "../db.js";
+import { authenticate } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 // GET all cities
 router.get("/cities", async (req, res) => {
   try {
-    const queryText = "SELECT * FROM visited_cities";
-    const result = await db.query(queryText);
+    const queryText = "SELECT * FROM visited_cities WHERE user_id = $1";
+    const result = await db.query(queryText, [req.userId]);
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -19,8 +20,9 @@ router.get("/cities", async (req, res) => {
 router.get("/cities/:id", async (req, res) => {
   const id = parseInt(req.params.id);
   try {
-    const queryText = "SELECT * FROM visited_cities WHERE id = $1";
-    const result = await db.query(queryText, [id]);
+    const queryText =
+      "SELECT * FROM visited_cities WHERE id = $1 AND user_id = $2";
+    const result = await db.query(queryText, [id, req.userId]);
     res.json(result.rows[0]);
   } catch (err) {
     console.error(err);
@@ -44,7 +46,7 @@ router.post("/cities", async (req, res) => {
       notes,
       parseFloat(position.x),
       parseFloat(position.y),
-      1, // temporary user_id
+      req.userId,
     ];
     const result = await db.query(queryText, values);
     res.json(result.rows[0]);
@@ -59,8 +61,9 @@ router.delete("/cities/:id", async (req, res) => {
   const id = parseInt(req.params.id);
 
   try {
-    const queryText = "DELETE FROM visited_cities WHERE id = $1 RETURNING *";
-    const result = await db.query(queryText, [id]);
+    const queryText =
+      "DELETE FROM visited_cities WHERE id = $1 AND user_id = $2 RETURNING *";
+    const result = await db.query(queryText, [id, req.userId]);
 
     if (result.rowCount === 0)
       res.status(404).json({ message: "Item not found" });

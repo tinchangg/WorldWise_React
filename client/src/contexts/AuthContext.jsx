@@ -1,9 +1,6 @@
 import { createContext, useContext, useReducer } from "react";
-import axios from "axios";
+import axios from "../api/axios";
 import { useEffect } from "react";
-
-// Include cookies automatically
-axios.defaults.withCredentials = true;
 
 // CREATE CONTEXT
 const AuthContext = createContext();
@@ -61,8 +58,13 @@ function AuthProvider({ children }) {
         const res = await axios.get("/api/auth/check");
         dispatch({ type: "setUser", payload: res.data.user });
       } catch (err) {
-        console.error(err);
-        dispatch({ type: "checkedAuth" });
+        if (err.response && err.response.status === 401) {
+          console.log("User not logged in yet.");
+          dispatch({ type: "checkedAuth" });
+        } else {
+          console.error(err);
+          dispatch({ type: "checkedAuth" });
+        }
       }
     };
     checkAuth();

@@ -2,7 +2,7 @@ import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import db from "../db.js";
-import authenticate from "../middleware/authMiddleware.js";
+import { authenticate } from "../middleware/authMiddleware.js";
 import { updateLastLogin } from "../services/userService.js";
 
 const router = express.Router();
@@ -111,7 +111,7 @@ router.get("/check", authenticate, async (req, res) => {
 
     res.json({ user });
   } catch {
-    res.status(403).json({ message: "Invalid token" });
+    res.status(403).json({ error: "Invalid token" });
   }
 });
 

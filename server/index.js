@@ -2,6 +2,7 @@ import "dotenv/config.js"; // Automatically calls dotenv.config()
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { authenticate } from "./middleware/authMiddleware.js";
 import citiesRoutes from "./routes/citiesRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 
@@ -18,8 +19,8 @@ app.get("/", (req, res) => {
 });
 
 // API Routes
-app.use("/api", citiesRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api", authenticate, citiesRoutes);
 
 // Start Server
 const PORT = process.env.PORT || 5000;

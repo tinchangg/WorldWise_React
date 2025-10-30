@@ -1,15 +1,16 @@
 import { createContext, useEffect, useReducer } from "react";
-import axios from "axios";
+import axios from "../api/axios";
+import { useAuth } from "./AuthContext";
 
 // BASE URL
 // const BASE_URL = "http://localhost:8000";
 
 // DEV ONLY -> PAUSE function
-const pause = (duration) => {
-  return new Promise((resolve) => {
-    setTimeout(resolve, duration);
-  });
-};
+// const pause = (duration) => {
+//   return new Promise((resolve) => {
+//     setTimeout(resolve, duration);
+//   });
+// };
 
 // CREATE CONTEXT
 const CitiesContext = createContext();
@@ -59,6 +60,9 @@ const reducer = (state, action) => {
 
 // PROVIDER
 function CitiesProvider({ children }) {
+  // HOOKS
+  const { isAuthenticated } = useAuth();
+
   // STATES
   const [{ cities, isLoading, currentCity }, dispatch] = useReducer(
     reducer,
@@ -78,8 +82,8 @@ function CitiesProvider({ children }) {
         dispatch({ type: "rejected", payload: "Failed to fetch cities..." });
       }
     };
-    fetchCities();
-  }, []);
+    if (isAuthenticated) fetchCities();
+  }, [isAuthenticated]);
 
   // FUNCTION -> FETCH CURRENT CITY
   const getCity = async (id) => {
