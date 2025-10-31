@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import styles from "./Login.module.css";
 import PageNav from "../components/PageNav";
 import Button from "../components/Button";
-import { useAuth } from "../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 
 export default function Login() {
-  // PRE-FILL FOR DEV PURPOSES
+  // States
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -24,6 +24,7 @@ export default function Login() {
     }
   };
 
+  // Effect -> listening isAuthenticated
   useEffect(() => {
     if (isAuthenticated === true) {
       navigate("/app", { replace: true });
@@ -41,6 +42,7 @@ export default function Login() {
             id="email"
             onChange={(e) => setEmail(e.target.value)}
             value={email}
+            required
           />
         </div>
 
@@ -51,10 +53,14 @@ export default function Login() {
             id="password"
             onChange={(e) => setPassword(e.target.value)}
             value={password}
+            required
           />
         </div>
 
-        <div>
+        <div className={styles.button}>
+          <Link to={"/register"} className={styles.link}>
+            Sign Up Now!
+          </Link>
           <Button type="primary">Login</Button>
         </div>
       </form>

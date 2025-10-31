@@ -24,3 +24,8 @@
   flex-direction: column;
   gap: 0.5rem;
 }
+
+.button {
+  margin-left: auto;
+  margin-top: 2rem;
+}

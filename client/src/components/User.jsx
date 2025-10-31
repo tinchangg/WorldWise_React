@@ -1,6 +1,7 @@
 import styles from "./User.module.css";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import Spinner from "./Spinner";
 
 function User() {
   // Hooks
@@ -14,6 +15,8 @@ function User() {
       navigate("/");
     }
   };
+
+  if (!isAuthenticated) return <Spinner />;
 
   return (
     <div className={styles.user}>

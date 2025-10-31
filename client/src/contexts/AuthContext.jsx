@@ -29,6 +29,13 @@ const reducer = (state, action) => {
         isAuthenticated: false,
         loadingAuth: false,
       };
+    case "register":
+      return {
+        ...state,
+        user: action.payload,
+        isAuthenticated: true,
+        loadingAuth: false,
+      };
     case "setUser":
       return {
         ...state,
@@ -56,6 +63,7 @@ function AuthProvider({ children }) {
     const checkAuth = async () => {
       try {
         const res = await axios.get("/api/auth/check");
+        console.log(res.data);
         dispatch({ type: "setUser", payload: res.data.user });
       } catch (err) {
         if (err.response && err.response.status === 401) {
@@ -71,6 +79,7 @@ function AuthProvider({ children }) {
   }, []);
 
   // Fns
+  // Login
   const login = async (credentials) => {
     try {
       const res = await axios.post("/api/auth/login", credentials);
@@ -81,12 +90,24 @@ function AuthProvider({ children }) {
     }
   };
 
+  // Logout
   const logout = async () => {
     await axios.get("/api/auth/logout");
     dispatch({ type: "logout" });
   };
 
-  const value = { user, isAuthenticated, loadingAuth, login, logout };
+  // Register
+  const register = async (credentials) => {
+    try {
+      const res = await axios.post("/api/auth/register", credentials);
+      dispatch({ type: "register", payload: res.data.user });
+    } catch (err) {
+      console.error(err);
+      window.alert("Error creating new user");
+    }
+  };
+
+  const value = { user, isAuthenticated, loadingAuth, login, logout, register };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

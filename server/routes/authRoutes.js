@@ -9,6 +9,12 @@ const router = express.Router();
 
 const saltRounds = 10;
 const maxAge = 15 * 60; // jwt -> sec
+const cookieConfig = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "strict",
+  maxAge: maxAge * 1000, // cookie -> millisecond
+};
 
 // Fn
 const createToken = (payloadObject) => {
@@ -20,7 +26,7 @@ const createToken = (payloadObject) => {
 // Register
 router.post("/register", async (req, res) => {
   // user input
-  const { email, password } = req.body;
+  const { name, email, password } = req.body;
   // hash password
   const hashedPassword = await bcrypt.hash(password, saltRounds);
 
@@ -30,14 +36,34 @@ router.post("/register", async (req, res) => {
     const checkResult = await db.query(checkQuery, [email]);
 
     if (checkResult.rows.length > 0)
-      return res.json({ error: "Email already exists" });
+      return res.status(409).json({ error: "Email already exists" });
 
     // Create user
     const queryText =
-      "INSERT INTO users(email, password_hash) VALUES ($1, $2) RETURNING *;";
-    const values = [email, hashedPassword];
+      "INSERT INTO users(email, password_hash, name, avatar) VALUES ($1, $2, $3, $4) RETURNING *;";
+    const values = [
+      email,
+      hashedPassword,
+      name,
+      "https://i.pravatar.cc/100?u=zz", // temporary avatar
+    ];
     const result = await db.query(queryText, values);
-    res.json(result.rows[0]);
+    const user = result.rows[0];
+
+    // Create JWT
+    const userPayload = { id: user.id };
+    const token = createToken(userPayload);
+
+    // Send token in HTTP-only cookie
+    res.cookie("jwt", token, cookieConfig);
+    res.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+      },
+    });
   } catch (err) {
     if (err.message.includes("bcrypt")) {
       console.error("Bcrypt Error:", err);
@@ -60,11 +86,11 @@ router.post("/login", async (req, res) => {
     const user = result.rows[0];
 
     // If no user -> return error
-    if (!user) return res.json({ error: "Wrong email or password" });
+    if (!user) return res.status(401).json({ error: "Invalid credentials" });
 
     // If there's user -> check password
     const match = await bcrypt.compare(password, user.password_hash);
-    if (!match) return res.json({ error: "Wrong email or password" });
+    if (!match) return res.status(401).json({ error: "Invalid credentials" });
 
     // Password correct -> update last login
     await updateLastLogin(user.id);
@@ -74,12 +100,7 @@ router.post("/login", async (req, res) => {
     const token = createToken(userPayload);
 
     // Send token in HTTP-only cookie
-    res.cookie("jwt", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: maxAge * 1000, // cookie -> millisecond
-    });
+    res.cookie("jwt", token, cookieConfig);
     res.json({
       user: {
         id: user.id,
@@ -107,7 +128,7 @@ router.get("/check", authenticate, async (req, res) => {
     );
     const user = result.rows[0];
 
-    if (!user) return res.status(401).json({ error: "User not found" });
+    if (!user) return res.status(401).json({ error: "Invalid credentials" });
 
     res.json({ user });
   } catch {
