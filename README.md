@@ -49,9 +49,9 @@ The project started as a React frontend app, guided by _Jonas Schmedtmann’s_ [
 
 - [ ] API input validation & centralized error handling
 
-- [ ] Authentication (JWT or sessions)
+- [x] Authentication (JWT or sessions)
 
-- [ ] User accounts & per-user city logs
+- [x] User accounts & per-user city logs
 
 - [ ] OAuth (Google login)
 
