@@ -7,12 +7,14 @@ import { updateLastLogin } from "../services/userService.js";
 
 const router = express.Router();
 
+// Config
 const saltRounds = 10;
 const maxAge = 15 * 60; // jwt -> sec
+const isProduction = process.env.NODE_ENV === "production";
 const cookieConfig = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "strict",
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "strict",
   maxAge: maxAge * 1000, // cookie -> millisecond
 };
 
