@@ -1,6 +1,7 @@
 import pg from "pg";
 
 const { Pool } = pg;
+const isProduction = process.env.NODE_ENV === "production";
 
 const db = new Pool({
   user: process.env.DB_USER,
@@ -8,7 +9,7 @@ const db = new Pool({
   database: process.env.DB_NAME,
   password: process.env.DB_PASS,
   port: process.env.DB_PORT,
-  ssl: { rejectUnauthorized: false },
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
 });
 
 export default db;

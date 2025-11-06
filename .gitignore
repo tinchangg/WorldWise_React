@@ -83,7 +83,7 @@ server/build/
 .editorconfig
 
 # PostgreSQL / DB temp files
-*.sql
+/db/dumps/sql
 *.dump
 *.backup
 pgdata/
