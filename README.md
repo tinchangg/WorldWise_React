@@ -4,6 +4,8 @@ A full-stack travel log application where users can document cities they’ve vi
 
 The project started as a React frontend app, guided by _Jonas Schmedtmann’s_ [The Ultimate React Course](https://www.udemy.com/course/the-ultimate-react-course/), and was later expanded into a **full-stack app** with a Node.js/Express backend and PostgreSQL database.
 
+> **[🔗Live Demo](https://worldwise-react-k23p.onrender.com/)**
+
 ## ✨ Features
 
 ### Frontend (React + Leaflet)
@@ -23,6 +25,14 @@ The project started as a React frontend app, guided by _Jonas Schmedtmann’s_ [
 - PostgreSQL database for persistent storage
 - Express-based project structure for scalability
 
+## 🍽️ App Flow
+
+1. Landing page introduces the travel tracker app
+2. Log in or create an account
+3. Select any city on the mapp to add a visited city
+4. Browse your saved cities from the left side city list
+5. Switch to the country tab to view all visited countries
+
 ## 🗂️ Project Structure
 
 ```bash
@@ -30,18 +40,21 @@ The project started as a React frontend app, guided by _Jonas Schmedtmann’s_ [
 ├── client/              # React frontend
 │   ├── src/
 │   │   ├── components/  # Reusable UI components + CSS modules
-│   │   ├── context/     # Global state management
+│   │   ├── context/     # Global state management (Auth, Cities)
 │   │   ├── hooks/       # Custom React hooks
-│   │   ├── pages/       # Landing + App pages
+│   │   ├── pages/       # Landing and main app pages
 │   │   ├── App.jsx
 │   │   ├── index.css
 │   │   └── main.jsx
 │   ├── index.html
-│   └── vite.config.js   # Vite dev/proxy setup
+│   └── vite.config.js   # Vite config + dev proxy
+│
+├── db/
+│   └──migrations        # SQL migration file
 │
 └── server/              # Node.js backend
     ├── routes/          # Express routes
-    ├── db.js            # PostgreSQL connection
+    ├── db.js            # PostgreSQL pool setup
     └── index.js         # Backend entry point
 ```
 
@@ -55,4 +68,4 @@ The project started as a React frontend app, guided by _Jonas Schmedtmann’s_ [
 
 - [ ] OAuth (Google login)
 
-- [ ] Deployment (Render/Heroku or similar)
+- [x] Deployment (Render/Heroku or similar)
