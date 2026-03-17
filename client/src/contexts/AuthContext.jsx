@@ -55,7 +55,7 @@ function AuthProvider({ children }) {
   // States
   const [{ user, isAuthenticated, loadingAuth }, dispatch] = useReducer(
     reducer,
-    initialState
+    initialState,
   );
 
   // Effects -> Initial Auth Check
@@ -63,7 +63,7 @@ function AuthProvider({ children }) {
     const checkAuth = async () => {
       try {
         const res = await axios.get("/api/auth/check");
-        console.log(res.data);
+        // console.log(res.data);
         dispatch({ type: "setUser", payload: res.data.user });
       } catch (err) {
         if (err.response && err.response.status === 401) {

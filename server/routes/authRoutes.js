@@ -1,29 +1,18 @@
 import express from "express";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import db from "../db.js";
 import { authenticate } from "../middleware/authMiddleware.js";
+import {
+  clearCookieToken,
+  createToken,
+  setCookieToken,
+} from "../services/tokenService.js";
 import { updateLastLogin } from "../services/userService.js";
 
 const router = express.Router();
 
 // Config
 const saltRounds = 10;
-const maxAge = 15 * 60; // jwt -> sec
-const isProduction = process.env.NODE_ENV === "production";
-const cookieConfig = {
-  httpOnly: true,
-  secure: isProduction,
-  sameSite: isProduction ? "none" : "strict",
-  maxAge: maxAge * 1000, // cookie -> millisecond
-};
-
-// Fn
-const createToken = (payloadObject) => {
-  return jwt.sign(payloadObject, process.env.JWT_ACCESS_SECRET, {
-    expiresIn: maxAge,
-  });
-};
 
 // Register
 router.post("/register", async (req, res) => {
@@ -56,8 +45,9 @@ router.post("/register", async (req, res) => {
     const userPayload = { id: user.id };
     const token = createToken(userPayload);
 
-    // Send token in HTTP-only cookie
-    res.cookie("jwt", token, cookieConfig);
+    // Send token in cookie
+    setCookieToken(res, token);
+
     res.json({
       user: {
         id: user.id,
@@ -101,8 +91,9 @@ router.post("/login", async (req, res) => {
     const userPayload = { id: user.id };
     const token = createToken(userPayload);
 
-    // Send token in HTTP-only cookie
-    res.cookie("jwt", token, cookieConfig);
+    // Send token in cookie
+    setCookieToken(res, token);
+
     res.json({
       user: {
         id: user.id,
@@ -126,7 +117,7 @@ router.get("/check", authenticate, async (req, res) => {
   try {
     const result = await db.query(
       "SELECT id, email, avatar, name FROM users WHERE id = $1;",
-      [req.userId]
+      [req.userId],
     );
     const user = result.rows[0];
 
@@ -140,7 +131,7 @@ router.get("/check", authenticate, async (req, res) => {
 
 // Logout
 router.get("/logout", (req, res) => {
-  res.clearCookie("jwt");
+  clearCookieToken(res);
   res.json({ message: "Logged out" });
 });
 
