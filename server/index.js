@@ -3,8 +3,9 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { authenticate } from "./middleware/authMiddleware.js";
-import citiesRoutes from "./routes/citiesRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import oauthRoutes from "./routes/oauthRoutes.js";
+import citiesRoutes from "./routes/citiesRoutes.js";
 
 // env.config();
 const app = express();
@@ -20,6 +21,7 @@ app.get("/", (req, res) => {
 
 // API Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/auth/google", oauthRoutes);
 app.use("/api", authenticate, citiesRoutes);
 
 // Start Server
