@@ -1,7 +1,8 @@
 import express from "express";
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import passport from "passport";
-import db from "../db";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import db from "../db.js";
+import { createToken, setCookieToken } from "../services/tokenService.js";
 
 const router = express.Router();
 
@@ -51,7 +52,12 @@ async function CreateUserWithoutEmail(profileData) {
   try {
     await db.query(
       "INSERT INTO users_linked_accounts(user_id, provider_name, provider_id, raw_email) VALUES ($1, $2, $3, $4);",
-      [user.id, profileData.provider, profileData.id, profileData.emails],
+      [
+        user.id,
+        profileData.provider,
+        profileData.id,
+        JSON.stringify(profileData.emails),
+      ],
     );
 
     return user.id;
@@ -70,7 +76,7 @@ async function LinkUserByEmail(userData, profileData) {
       profileData.provider,
       profileData.id,
       userData.email,
-      profileData.emails,
+      JSON.stringify(profileData.emails),
     ],
   );
 
@@ -82,7 +88,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "api/auth/google/callback",
+      callbackURL: "/api/auth/google/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
       // profile contains: id, displayName, emails, photos, etc.
@@ -113,7 +119,7 @@ passport.use(
         // a) no match -> create account without email (only enable oauth)
         if (userArr.length === 0) {
           const newUserId = await CreateUserWithoutEmail(profile);
-          return done(null, userId);
+          return done(null, newUserId);
         }
 
         // b) single match -> link user
@@ -136,10 +142,27 @@ passport.use(
 // Auth route
 router.get(
   "/",
-  passport.authenticate("google", { scope: ["profile", "email"] }),
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    session: false,
+  }),
 );
 
 // Callback route
-router.get("/callback", passport.authenticate("google"));
+router.get(
+  "/callback",
+  passport.authenticate("google", {
+    session: false,
+    failureRedirect: `${process.env.FRONTEND_URL}/login`,
+  }),
+  (req, res) => {
+    // Create JWT
+    const userPayload = { id: req.user };
+    const token = createToken(userPayload);
+    // Send token in cookie and redirect to frontend
+    setCookieToken(res, token);
+    res.redirect(`${process.env.FRONTEND_URL}/app`);
+  },
+);
 
 export default router;
