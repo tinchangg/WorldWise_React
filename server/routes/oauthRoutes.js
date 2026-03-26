@@ -5,6 +5,78 @@ import db from "../db";
 
 const router = express.Router();
 
+const AVATAR_FALLBACK = "https://i.pravatar.cc/100?u=zz";
+
+// HELPERS
+async function checkLinkedAccount(provider, id) {
+  const result = await db.query(
+    "SELECT user_id FROM users_linked_accounts WHERE provider_name = $1 AND provider_id = $2;",
+    [provider, id],
+  );
+
+  // No account found
+  if (result.rows.length === 0) {
+    return null;
+  }
+
+  return result.rows[0].user_id;
+}
+
+function extractVerifiedEmails(emailArr) {
+  return emailArr
+    .filter((emailObj) => emailObj.verified === true)
+    .map((emailObj) => emailObj.value);
+}
+
+async function checkExistingEmail(emailArr) {
+  const result = await db.query(
+    "SELECT id, email FROM users WHERE email = ANY($1::text[]);",
+    [emailArr],
+  );
+
+  return result.rows;
+}
+
+async function CreateUserWithoutEmail(profileData) {
+  const avatar = profileData.photos?.[0]?.value || AVATAR_FALLBACK;
+
+  // create user
+  const result = await db.query(
+    "INSERT INTO users(name, avatar) VALUES ($1, $2) RETURNING *;",
+    [profileData.displayName, avatar],
+  );
+  const user = result.rows[0];
+
+  // create linked accout
+  try {
+    await db.query(
+      "INSERT INTO users_linked_accounts(user_id, provider_name, provider_id, raw_email) VALUES ($1, $2, $3, $4);",
+      [user.id, profileData.provider, profileData.id, profileData.emails],
+    );
+
+    return user.id;
+  } catch (err) {
+    // clean up on linked account creation failure
+    await db.query("DELETE FROM users WHERE id = $1;", [user.id]);
+    throw err;
+  }
+}
+
+async function LinkUserByEmail(userData, profileData) {
+  const result = await db.query(
+    "INSERT INTO users_linked_accounts(user_id, provider_name, provider_id, linked_email, raw_email) VALUES ($1, $2, $3, $4, $5) RETURNING *;",
+    [
+      userData.id,
+      profileData.provider,
+      profileData.id,
+      userData.email,
+      profileData.emails,
+    ],
+  );
+
+  return result.rows[0].user_id;
+}
+
 passport.use(
   new GoogleStrategy(
     {
@@ -14,129 +86,48 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       // profile contains: id, displayName, emails, photos, etc.
-      console.log(profile);
+      // console.log(profile);
+      // profile clean up
 
       try {
         // Check existing profile
-        const queryProfile = await db.query(
-          "SELECT user_id FROM users_linked_accounts WHERE provider_name = $1 AND provider_id = $2;",
-          [profile.provider, profile.id],
-        );
+        const userId = await checkLinkedAccount(profile.provider, profile.id);
 
         // 1) User existing
-        if (queryProfile.rows.length > 0) {
-          const user = queryProfile.rows[0].user_id;
-          done(null, user);
-        } else {
-          // 2) User not existing
-          // extract an array of verified email strings
-          const verifiedEmails = profile.emails
-            .filter((emailObj) => emailObj.verified === true)
-            .map((emailObj) => emailObj.value);
-
-          // A) More than 1 verified emails
-          if (verifiedEmails.length > 0) {
-            // check if there is verified emails in our storage
-            const queryEmail = await db.query(
-              "SELECT id, email FROM users WHERE email = ANY($1::text[]);",
-              [verifiedEmails],
-            );
-            // a) no match -> create new user
-            if (queryEmail.rows.length === 0) {
-              try {
-                // create user
-                const avatar =
-                  profile.photos?.[0]?.value ||
-                  "https://i.pravatar.cc/100?u=zz";
-                const createUser = await db.query(
-                  "INSERT INTO users(name, avatar) VALUES ($1, $2) RETURNING *;",
-                  [profile.displayName, avatar],
-                );
-                const user = createUser.rows[0];
-
-                // create linked account
-                try {
-                  await db.query(
-                    "INSERT INTO users_linked_accounts(user_id, provider_name, provider_id, raw_email) VALUES ($1, $2, $3, $4);",
-                    [user.id, profile.provider, profile.id, profile.emails],
-                  );
-
-                  done(null, user.id);
-                } catch (err) {
-                  // clean up
-                  await db.query("DELETE FROM users WHERE id = $1;", [user.id]);
-                  console.error(err);
-                  done(err);
-                }
-              } catch (err) {
-                console.error(err);
-                done(err);
-              }
-            } else if (queryEmail.rows.length === 1) {
-              // b) 1 match -> auto link to existing user
-              // match user
-              const user = queryEmail.rows[0];
-
-              try {
-                await db.query(
-                  "INSERT INTO users_linked_accounts(user_id, provider_name, provider_id, linked_email, raw_email) VALUES ($1, $2, $3, $4, $5);",
-                  [
-                    user.id,
-                    profile.provider,
-                    profile.id,
-                    user.email,
-                    profile.emails,
-                  ],
-                );
-
-                done(null, user.id);
-              } catch (err) {
-                console.error(err);
-                done(err);
-              }
-            } else if (queryEmail.rows.length > 1) {
-              // c) more than one match -> prompt user to log in with password
-              return done(
-                new Error(
-                  "Email conflict: multiple existing accounts match. Please log in with your password or contact support.",
-                ),
-              );
-            }
-            // B) No verified email -> create new user left email null
-          } else if (verifiedEmails.length === 0) {
-            // create user
-            try {
-              const avatar =
-                profile.photos?.[0]?.value || "https://i.pravatar.cc/100?u=zz";
-              const createUser = await db.query(
-                "INSERT INTO users(name, avatar) VALUES ($1, $2) RETURNING *;",
-                [profile.displayName, avatar],
-              );
-              const user = createUser.rows[0];
-
-              // create linked accounts
-              try {
-                await db.query(
-                  "INSERT INTO users_linked_accounts(user_id, provider_name, provider_id, raw_email) VALUES ($1, $2, $3, $4);",
-                  [user.id, profile.provider, profile.id, profile.emails],
-                );
-
-                done(null, user.id);
-              } catch (err) {
-                // clean up
-                await db.query("DELETE FROM users WHERE id = $1;", [user.id]);
-                console.error(err);
-                done(err);
-              }
-            } catch (err) {
-              console.error(err);
-              done(err);
-            }
-          }
+        if (userId) {
+          return done(null, userId);
         }
+
+        // 2) User not existing -> extract verified email array from profile
+        const verifiedEmails = extractVerifiedEmails(profile.emails);
+
+        // A) No Verified Email -> create account without email (only enable oauth)
+        if (verifiedEmails.length === 0) {
+          const newUserId = await CreateUserWithoutEmail(profile);
+          return done(null, newUserId);
+        }
+
+        // B) Verified Email Exists -> check match user email
+        const userArr = await checkExistingEmail(verifiedEmails);
+
+        // a) no match -> create account without email (only enable oauth)
+        if (userArr.length === 0) {
+          const newUserId = await CreateUserWithoutEmail(profile);
+          return done(null, userId);
+        }
+
+        // b) single match -> link user
+        if (userArr.length === 1) {
+          const linkedUserId = await LinkUserByEmail(userArr[0], profile);
+          return done(null, linkedUserId);
+        }
+
+        // c) multiple matches -> CONFLICT
+        return done(
+          new Error("Please log in with your password or contact support."),
+        );
       } catch (err) {
-        console.error(err);
-        done(err);
+        return done(err);
       }
     },
   ),
