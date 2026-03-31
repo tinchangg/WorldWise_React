@@ -24,6 +24,8 @@ export default function Login() {
     }
   };
 
+  const handleGoogleLogin = () => {};
+
   // Effect -> listening isAuthenticated
   useEffect(() => {
     if (isAuthenticated === true) {
@@ -34,36 +36,44 @@ export default function Login() {
   return (
     <main className={styles.login}>
       <PageNav />
-      <form className={styles.form} onSubmit={handleLogin}>
-        <div className={styles.row}>
-          <label htmlFor="email">Email address</label>
-          <input
-            type="email"
-            id="email"
-            onChange={(e) => setEmail(e.target.value)}
-            value={email}
-            required
-          />
-        </div>
+      <div className={styles.container}>
+        <form onSubmit={handleLogin}>
+          <div className={styles.row}>
+            <label htmlFor="email">Email address</label>
+            <input
+              type="email"
+              id="email"
+              onChange={(e) => setEmail(e.target.value)}
+              value={email}
+              required
+            />
+          </div>
 
-        <div className={styles.row}>
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            onChange={(e) => setPassword(e.target.value)}
-            value={password}
-            required
-          />
-        </div>
+          <div className={styles.row}>
+            <label htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              onChange={(e) => setPassword(e.target.value)}
+              value={password}
+              required
+            />
+          </div>
 
-        <div className={styles.button}>
-          <Link to={"/register"} className={styles.link}>
-            Sign Up Now!
-          </Link>
-          <Button type="primary">Login</Button>
-        </div>
-      </form>
+          <div className={styles.button}>
+            <Link to={"/register"} className={styles.link}>
+              Sign Up!
+            </Link>
+            <Button type="primary">Login</Button>
+          </div>
+        </form>
+
+        <p>Or login in with</p>
+
+        <button className={styles.googleButton} onClick={handleGoogleLogin}>
+          <img src="/sign_in_with_google.png" alt="Sign in with Google" />
+        </button>
+      </div>
     </main>
   );
 }

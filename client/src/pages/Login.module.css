@@ -5,27 +5,34 @@
   min-height: calc(100vh - 5rem);
 }
 
-.form {
+.container {
   background-color: var(--color-dark--2);
   border-radius: 7px;
-  padding: 2rem 3rem;
+  padding: 2.2rem 3rem;
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-
   /* Different from other form */
   width: 48rem;
   margin: 8rem auto;
+
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
-.row {
+/* sign in with email */
+.container form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.container form .row {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.button {
+.container form .button {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -43,4 +50,28 @@
 
 .link:hover {
   color: var(--color-brand--2);
+}
+
+.container p {
+  text-align: center;
+  font-size: 1.6rem;
+  margin-top: 2rem;
+  text-transform: capitalize;
+}
+
+/* sign in with google */
+.googleButton {
+  align-self: center;
+  display: inline-block;
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.googleButton img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
 }
