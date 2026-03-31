@@ -22,6 +22,13 @@ const reducer = (state, action) => {
         isAuthenticated: true,
         loadingAuth: false,
       };
+    case "loginWithGoogle":
+      return {
+        ...state,
+        user: action.payload,
+        isAuthenticated: true,
+        loadingAuth: false,
+      };
     case "logout":
       return {
         ...state,
@@ -90,6 +97,17 @@ function AuthProvider({ children }) {
     }
   };
 
+  // Login with Google OAuth
+  const loginWithGoogle = async () => {
+    try {
+      const res = await axios.get("/api/auth/google");
+      dispatch({ type: "loginWithGoogle", payload: res.data.user });
+    } catch (err) {
+      console.error(err);
+      window.alert("Error logging in with Google");
+    }
+  };
+
   // Logout
   const logout = async () => {
     await axios.get("/api/auth/logout");
@@ -107,7 +125,15 @@ function AuthProvider({ children }) {
     }
   };
 
-  const value = { user, isAuthenticated, loadingAuth, login, logout, register };
+  const value = {
+    user,
+    isAuthenticated,
+    loadingAuth,
+    login,
+    loginWithGoogle,
+    logout,
+    register,
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

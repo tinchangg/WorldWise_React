@@ -11,7 +11,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
 
   // Hooks
-  const { login, isAuthenticated } = useAuth();
+  const { login, loginWithGoogle, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   // Handles
@@ -24,7 +24,9 @@ export default function Login() {
     }
   };
 
-  const handleGoogleLogin = () => {};
+  const handleGoogleLogin = () => {
+    loginWithGoogle();
+  };
 
   // Effect -> listening isAuthenticated
   useEffect(() => {
