@@ -34,16 +34,19 @@ export async function checkExistingEmail(emailArr) {
 export async function createUserWithoutEmail(profileData) {
   const avatar = profileData.photos?.[0]?.value || AVATAR_FALLBACK;
 
-  // create user
-  const result = await db.query(
-    "INSERT INTO users(name, avatar) VALUES ($1, $2) RETURNING *;",
-    [profileData.displayName, avatar],
-  );
-  const user = result.rows[0];
-
-  // create linked account
+  const client = await db.connect();
   try {
-    await db.query(
+    await client.query("BEGIN");
+
+    // create user
+    const result = await client.query(
+      "INSERT INTO users(name, avatar) VALUES ($1, $2) RETURNING *;",
+      [profileData.displayName, avatar],
+    );
+    const user = result.rows[0];
+
+    // create linked account
+    await client.query(
       "INSERT INTO users_linked_accounts(user_id, provider_name, provider_id, raw_email) VALUES ($1, $2, $3, $4);",
       [
         user.id,
@@ -53,11 +56,14 @@ export async function createUserWithoutEmail(profileData) {
       ],
     );
 
+    // all succeed -> commit
+    await client.query("COMMIT");
     return user;
   } catch (err) {
-    // clean up on linked account creation failure
-    await db.query("DELETE FROM users WHERE id = $1;", [user.id]);
+    await client.query("ROLLBACK");
     throw err;
+  } finally {
+    client.release();
   }
 }
 
