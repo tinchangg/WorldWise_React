@@ -34,12 +34,12 @@ passport.use(
 
       try {
         // Check existing profile
-        const userId = await checkLinkedAccount(profile.provider, profile.id);
+        const user = await checkLinkedAccount(profile.provider, profile.id);
 
         // 1) User existing
-        if (userId) {
-          await updateLastLogin(userId);
-          return done(null, userId);
+        if (user) {
+          await updateLastLogin(user.id);
+          return done(null, user);
         }
 
         // 2) User not existing -> extract verified email array from profile
@@ -47,8 +47,8 @@ passport.use(
 
         // A) No Verified Email -> create account without email (only enable oauth)
         if (verifiedEmails.length === 0) {
-          const newUserId = await createUserWithoutEmail(profile);
-          return done(null, newUserId);
+          const newUser = await createUserWithoutEmail(profile);
+          return done(null, newUser);
         }
 
         // B) Verified Email Exists -> check match user email
@@ -56,15 +56,15 @@ passport.use(
 
         // a) no match -> create account without email (only enable oauth)
         if (userArr.length === 0) {
-          const newUserId = await createUserWithoutEmail(profile);
-          return done(null, newUserId);
+          const newUser = await createUserWithoutEmail(profile);
+          return done(null, newUser);
         }
 
         // b) single match -> link user
         if (userArr.length === 1) {
-          const linkedUserId = await linkUserByEmail(userArr[0], profile);
-          await updateLastLogin(linkedUserId);
-          return done(null, linkedUserId);
+          const linkedUser = await linkUserByEmail(userArr[0], profile);
+          await updateLastLogin(linkedUser.id);
+          return done(null, linkedUser);
         }
 
         // c) multiple matches -> CONFLICT
@@ -96,7 +96,7 @@ router.get(
   }),
   (req, res) => {
     // Create JWT
-    const userPayload = { id: req.user };
+    const userPayload = { id: req.user.id };
     const token = createToken(userPayload);
     // Send token in cookie and redirect to frontend
     setCookieToken(res, token);

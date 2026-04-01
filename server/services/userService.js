@@ -10,7 +10,7 @@ export async function updateLastLogin(userId) {
 
 export async function checkLinkedAccount(provider, id) {
   const result = await db.query(
-    "SELECT user_id FROM users_linked_accounts WHERE provider_name = $1 AND provider_id = $2;",
+    "SELECT u.id, u.name, u.email, u.avatar FROM users u JOIN users_linked_accounts ula ON u.id = ula.user_id WHERE ula.provider_name = $1 AND ula.provider_id = $2;",
     [provider, id],
   );
 
@@ -19,12 +19,12 @@ export async function checkLinkedAccount(provider, id) {
     return null;
   }
 
-  return result.rows[0].user_id;
+  return result.rows[0];
 }
 
 export async function checkExistingEmail(emailArr) {
   const result = await db.query(
-    "SELECT id, email FROM users WHERE email = ANY($1::text[]);",
+    "SELECT id, name, email, avatar FROM users WHERE email = ANY($1::text[]);",
     [emailArr],
   );
 
@@ -53,7 +53,7 @@ export async function createUserWithoutEmail(profileData) {
       ],
     );
 
-    return user.id;
+    return user;
   } catch (err) {
     // clean up on linked account creation failure
     await db.query("DELETE FROM users WHERE id = $1;", [user.id]);
@@ -73,5 +73,5 @@ export async function linkUserByEmail(userData, profileData) {
     ],
   );
 
-  return result.rows[0].user_id;
+  return userData;
 }

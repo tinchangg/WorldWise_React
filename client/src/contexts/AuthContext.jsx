@@ -22,13 +22,6 @@ const reducer = (state, action) => {
         isAuthenticated: true,
         loadingAuth: false,
       };
-    case "loginWithGoogle":
-      return {
-        ...state,
-        user: action.payload,
-        isAuthenticated: true,
-        loadingAuth: false,
-      };
     case "logout":
       return {
         ...state,
@@ -98,14 +91,9 @@ function AuthProvider({ children }) {
   };
 
   // Login with Google OAuth
-  const loginWithGoogle = async () => {
-    try {
-      const res = await axios.get("/api/auth/google");
-      dispatch({ type: "loginWithGoogle", payload: res.data.user });
-    } catch (err) {
-      console.error(err);
-      window.alert("Error logging in with Google");
-    }
+  const loginWithGoogle = () => {
+    // Redirect to backend route that starts Google OAuth flow
+    window.location.href = "/api/auth/google";
   };
 
   // Logout
